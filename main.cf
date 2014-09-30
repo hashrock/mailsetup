@@ -76,7 +76,6 @@ mail_owner = postfix
 #myhostname = virtual.domain.tld
 myhostname = mail.sushicorp.asia
 
-
 # The mydomain parameter specifies the local internet domain name.
 # The default is to use $myhostname minus the first component.
 # $mydomain is used as a default value for many other configuration
@@ -84,7 +83,6 @@ myhostname = mail.sushicorp.asia
 #
 #mydomain = domain.tld
 mydomain = sushicorp.asia
-
 
 # SENDING MAIL
 # 
@@ -100,7 +98,7 @@ mydomain = sushicorp.asia
 # to recipient addresses that have no @domain part.
 #
 #myorigin = $myhostname
-myorigin = $mydomain
+#myorigin = $mydomain
 
 # RECEIVING MAIL
 
@@ -165,8 +163,8 @@ inet_protocols = all
 #
 # See also below, section "REJECTING MAIL FOR UNKNOWN LOCAL USERS".
 #
+#mydestination = $myhostname, localhost.$mydomain, localhost
 mydestination = $myhostname, localhost.$mydomain, localhost, $mydomain
-#mydestination = $myhostname, localhost.$mydomain, localhost, $mydomain
 #mydestination = $myhostname, localhost.$mydomain, localhost, $mydomain,
 #	mail.$mydomain, www.$mydomain, ftp.$mydomain
 
@@ -319,6 +317,7 @@ unknown_local_recipient_reject_code = 550
 #relayhost = [mailserver.isp.tld]
 #relayhost = uucphost
 #relayhost = [an.ip.add.ress]
+relayhost = [smtp.gmail.com]:587
 
 # REJECTING UNKNOWN RELAY USERS
 #
@@ -466,6 +465,8 @@ home_mailbox = Maildir/
 # the main.cf file, otherwise the SMTP server will reject mail for    
 # non-UNIX accounts with "User unknown in local recipient table".
 #
+# Cyrus IMAP over LMTP. Specify ``lmtpunix      cmd="lmtpd"
+# listen="/var/imap/socket/lmtp" prefork=0'' in cyrus.conf.
 #mailbox_transport = lmtp:unix:/var/lib/imap/socket/lmtp
 
 # If using the cyrus-imapd IMAP server deliver local mail to the IMAP
@@ -488,7 +489,8 @@ home_mailbox = Maildir/
 # how many simultaneous LMTP sessions will be permitted to the Cyrus
 # message store. 
 #
-# To use the old cyrus deliver program you have to set:
+# Cyrus IMAP via command line. Uncomment the "cyrus...pipe" and
+# subsequent line in master.cf.
 #mailbox_transport = cyrus
 
 # The fallback_transport specifies the optional transport in master.cf
@@ -572,6 +574,7 @@ home_mailbox = Maildir/
 #
 #smtpd_banner = $myhostname ESMTP $mail_name
 #smtpd_banner = $myhostname ESMTP $mail_name ($mail_version)
+smtpd_banner = $myhostname ESMTP unknown
 
 # PARALLEL DELIVERY TO THE SAME DESTINATION
 #
@@ -673,10 +676,19 @@ manpage_directory = /usr/share/man
 # sample_directory: The location of the Postfix sample configuration files.
 # This parameter is obsolete as of Postfix 2.1.
 #
-sample_directory = /usr/share/doc/postfix-2.6.6/samples
+sample_directory = /usr/share/doc/postfix-2.10.1/samples
 
 # readme_directory: The location of the Postfix README files.
 #
-readme_directory = /usr/share/doc/postfix-2.6.6/README_FILES
+readme_directory = /usr/share/doc/postfix-2.10.1/README_FILES
+
+smtpd_sasl_auth_enable = yes
+smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
+smtp_sasl_mechanism_filter = plain
+smtpd_sasl_local_domain = $myhostname
+smtpd_recipient_restrictions =
+    permit_mynetworks
+    permit_sasl_authenticated
+    reject_unauth_destination
 
 message_size_limit = 10485760
